@@ -1,0 +1,6 @@
+export enum ActionTypes {
+  CHANGE_INPUT_VALUE = "todo/CHANGE_INPUT_VALUE",
+  INIT_TODOLIST = "todo/INIT_TODOLIST",
+  ADD_TASK = "todo/ADD_TASK",
+  DELETE_TASK = "todo/DELETE_TASK"
+}
