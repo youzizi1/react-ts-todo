@@ -1,5 +1,12 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import Todo from './Todo'
+import React from "react";
+import ReactDOM from "react-dom";
+import { Provider } from "react-redux";
+import store from "./store";
+import Todo from "./Todo";
 
-ReactDOM.render(<Todo />, document.getElementById('root'));
+ReactDOM.render(
+  <Provider store={store}>
+    <Todo />
+  </Provider>,
+  document.getElementById("root")
+);
