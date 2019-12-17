@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { connect } from "react-redux";
 import { Input, Button, List } from "antd";
 import {
   TodoTitleStyle,
@@ -6,20 +7,31 @@ import {
   TodoItemStyle,
   TodoStyle
 } from "./style";
+import { Todo as TodoModel } from "./store/model";
+import {
+  getTodoListAction,
+  addTaskAction,
+  changeInputValAction,
+  deleteTaskAction
+} from "./store/action";
+import { ToDoStore } from "../store/reducer";
 
 interface TodoInputProps {
   inputVal: string;
   addTask: (task: string) => void;
-  changeInputValue: (val: string) => void;
+  changeInputVal: (val: string) => void;
 }
 
 function TodoInput(props: TodoInputProps) {
-  const { inputVal, addTask, changeInputValue } = props;
+  const { inputVal, addTask, changeInputVal } = props;
+
   return (
     <TodoInputStyle>
       <Input
         value={inputVal}
-        onChange={(e: any) => changeInputValue(e.target.value)}
+        onChange={(e: React.FormEvent<HTMLInputElement>) =>
+          changeInputVal(e.currentTarget.value)
+        }
       />
       <Button type="primary" onClick={() => addTask(inputVal)}>
         Add Task
@@ -29,12 +41,13 @@ function TodoInput(props: TodoInputProps) {
 }
 
 interface TodoListProps {
-  todoList: string[];
+  todoList: TodoModel[];
   deleteTask: (index: number) => void;
 }
 
 function TodoList(props: TodoListProps) {
   const { todoList, deleteTask } = props;
+
   return (
     <TodoItemStyle>
       <List
@@ -52,7 +65,7 @@ function TodoList(props: TodoListProps) {
               </Button>
             ]}
           >
-            {todo}
+            {todo.task}
           </List.Item>
         )}
       />
@@ -62,62 +75,67 @@ function TodoList(props: TodoListProps) {
 
 interface TodoProps {
   title: string;
-}
-
-interface TodoState {
   inputVal: string;
-  todoList: string[];
+  todoList: TodoModel[];
+  getTodoList: () => void;
+  addTask: (task: string) => void;
+  changeInputVal: (val: string) => void;
+  deleteTask: (index: number) => void;
 }
 
-class Todo extends Component<TodoProps, TodoState> {
-  state: TodoState = {
-    inputVal: "",
-    todoList: ["学习", "睡觉"]
-  };
-
+class Todo extends Component<TodoProps, {}> {
   static defaultProps = {
     title: "todos"
   };
 
-  addTask = (task: string) => {
-    if (!task) {
-      alert("请输入任务");
-      return;
-    }
-
-    this.setState(state => ({
-      todoList: [...state.todoList, task],
-      inputVal: ""
-    }));
-  };
-
-  changeInputValue = (val: string) => {
-    this.setState(() => ({
-      inputVal: val
-    }));
-  };
-
-  deleteTask = (index: number) => {
-    const todoList = [...this.state.todoList];
-    todoList.splice(index, 1);
-    this.setState(() => ({
-      todoList
-    }));
-  };
+  componentDidMount() {
+    this.props.getTodoList();
+  }
 
   render() {
+    const {
+      title,
+      inputVal,
+      addTask,
+      changeInputVal,
+      todoList,
+      deleteTask
+    } = this.props;
+
     return (
       <TodoStyle>
-        <TodoTitleStyle>{this.props.title}</TodoTitleStyle>
+        <TodoTitleStyle>{title}</TodoTitleStyle>
         <TodoInput
-          inputVal={this.state.inputVal}
-          addTask={this.addTask}
-          changeInputValue={this.changeInputValue}
+          inputVal={inputVal}
+          addTask={addTask}
+          changeInputVal={changeInputVal}
         />
-        <TodoList todoList={this.state.todoList} deleteTask={this.deleteTask} />
+        <TodoList todoList={todoList} deleteTask={deleteTask} />
       </TodoStyle>
     );
   }
 }
 
-export default Todo;
+const mapStateToProps = (state: ToDoStore) => {
+  return {
+    inputVal: state.todo.inputVal,
+    todoList: state.todo.todoList
+  };
+};
+
+const mapDispatchToProps = (dispatch: any) => ({
+  getTodoList() {
+    dispatch(getTodoListAction());
+  },
+  addTask(task: string) {
+    dispatch(addTaskAction(task));
+  },
+  changeInputVal(val: string) {
+    dispatch(changeInputValAction(val));
+  },
+  deleteTask(index: number) {
+    dispatch(deleteTaskAction(index));
+  }
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Todo);
